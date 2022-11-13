@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.net.URI;
 import java.util.Collection;
 
@@ -19,7 +20,7 @@ public class TransactionController {
     private final TransactionService transactionService;
 
     @PostMapping
-    public ResponseEntity<Transaction> save(HttpServletRequest request, @RequestBody TransactionPostRequestBody transactionDto){
+    public ResponseEntity<Transaction> save(HttpServletRequest request, @RequestBody @Valid TransactionPostRequestBody transactionDto){
         Transaction transaction = transactionDto.convertTransactionRequestBodyToTransactionModel();
 
         return ResponseEntity.created(URI.create(request.getRequestURI())).body(transactionService.save(transaction));

@@ -18,7 +18,7 @@ public class TransactionRepositoryProvider implements TransactionRepository{
 
     @Override
     public void deleteAll() {
-        this.transactions.clear();
+        this.transactions.removeAll(findAll());
     }
 
     @Override

@@ -6,6 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.Future;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Past;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
@@ -14,7 +18,12 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransactionPostRequestBody {
+    @NotNull(message = "transaction value cannot be null")
+    @Min(value = 1L, message = "transaction value cannot be zero or negative")
     private BigDecimal value;
+
+    @NotNull(message = "transaction date cannot be null")
+    @Future(message = "transaction date cannot be in the past")
     private OffsetDateTime dateTime;
 
     public Transaction convertTransactionRequestBodyToTransactionModel(){

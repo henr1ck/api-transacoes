@@ -39,7 +39,7 @@ public class TransactionControllerTest {
 
     private final Transaction testTransaction = Transaction.builder()
             .value(new BigDecimal("99.99"))
-            .dateTime(OffsetDateTime.of(LocalDateTime.of(2022, Month.DECEMBER, 2,10,30,10), ZoneOffset.MAX))
+            .dateTime(OffsetDateTime.of(LocalDateTime.of(2026, Month.DECEMBER, 2,10,30,10), ZoneOffset.MAX))
             .build();
 
     @Test
@@ -84,5 +84,75 @@ public class TransactionControllerTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].value").value(testTransaction.getValue().toPlainString()))
                 .andExpect(jsonPath("$[0].dateTime").value(testTransaction.getDateTime().toString()));;
+    }
+
+    @Test
+    void save_shouldThrowABadRequestException_whenDateIsInThePast() throws Exception {
+        MockHttpServletRequestBuilder request = post(BASE_URL)
+                .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
+                        .value(testTransaction.getValue())
+                        .dateTime(testTransaction.getDateTime().minusYears(1000L))
+                        .build()))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void save_shouldReturnBadRequestStatusCode_whenValueIsNegative() throws Exception {
+        MockHttpServletRequestBuilder request = post(BASE_URL)
+                .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
+                        .value(testTransaction.getValue().multiply(BigDecimal.ONE.negate()))
+                        .dateTime(testTransaction.getDateTime())
+                        .build()))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void save_shouldReturnBadRequestStatusCode_whenDateIsNull() throws Exception {
+        MockHttpServletRequestBuilder request = post(BASE_URL)
+                .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
+                        .value(testTransaction.getValue())
+                        .dateTime(null)
+                        .build()))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void save_shouldReturnBadRequestStatusCode_whenValueIsNull() throws Exception {
+        MockHttpServletRequestBuilder request = post(BASE_URL)
+                .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
+                        .value(null)
+                        .dateTime(testTransaction.getDateTime())
+                        .build()))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void save_shouldReturnUnsupportedMediaTypeStatusCode_whenContentTypeIsNotApplicationJson() throws Exception {
+        MockHttpServletRequestBuilder request = post(BASE_URL)
+                .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
+                        .value(testTransaction.getValue())
+                        .dateTime(testTransaction.getDateTime())
+                        .build()))
+                .contentType(MediaType.TEXT_HTML);
+
+        mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(status().isUnsupportedMediaType());
     }
 }

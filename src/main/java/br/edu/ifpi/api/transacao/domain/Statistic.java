@@ -13,6 +13,8 @@ public class Statistic {
     private Long count;
     private Double sum;
     private Double avg;
-    private Double min;
-    private Double max;
+    @Builder.Default
+    private Double min = 0.0;
+    @Builder.Default
+    private Double max = 0.0;
 }

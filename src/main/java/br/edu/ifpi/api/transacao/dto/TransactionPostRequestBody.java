@@ -20,7 +20,7 @@ import java.time.OffsetDateTime;
 public class TransactionPostRequestBody {
     @NotNull(message = "transaction value cannot be null")
     @Min(value = 1L, message = "transaction value cannot be zero or negative")
-    @Digits(integer = Integer.MAX_VALUE, fraction = 2)
+    @Digits(integer = Integer.MAX_VALUE, fraction = 2, message = "transaction value must be only two fractional digits")
     private BigDecimal value;
 
     @NotNull(message = "transaction date cannot be null")

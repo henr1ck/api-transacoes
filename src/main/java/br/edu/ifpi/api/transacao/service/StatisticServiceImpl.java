@@ -23,12 +23,20 @@ public class StatisticServiceImpl implements StatisticService{
                 .mapToDouble(BigDecimal::doubleValue)
                 .summaryStatistics();
 
+        double max = doubleSummaryStatistics.getMax();
+        double min = doubleSummaryStatistics.getMin();
+
+        if(Double.isInfinite(max) || Double.isInfinite(min)) {
+            max = 0.0;
+            min = 0.0;
+        }
+
         return Statistic.builder()
                 .count(doubleSummaryStatistics.getCount())
                 .sum(doubleSummaryStatistics.getSum())
                 .avg(doubleSummaryStatistics.getAverage())
-                .max(doubleSummaryStatistics.getMax())
-                .min(doubleSummaryStatistics.getMin())
+                .max(max)
+                .min(min)
                 .build();
 
     }

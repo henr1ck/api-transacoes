@@ -12,6 +12,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -87,7 +88,7 @@ public class TransactionControllerTest {
     }
 
     @Test
-    void save_shouldThrowABadRequestException_whenDateIsInThePast() throws Exception {
+    void save_shouldThrowAMethodArgumentNotValidExceptionDescriptor_whenDateIsInThePast() throws Exception {
         MockHttpServletRequestBuilder request = post(BASE_URL)
                 .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
                         .value(testTransaction.getValue())
@@ -97,11 +98,15 @@ public class TransactionControllerTest {
 
         mockMvc.perform(request)
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.exception").value(MethodArgumentNotValidException.class.getSimpleName()))
+                .andExpect(jsonPath("$.fields").value("dateTime"))
+                .andExpect(jsonPath("$.fieldsMessage").value("transaction date cannot be in the past"));
     }
 
     @Test
-    void save_shouldReturnBadRequestStatusCode_whenValueIsNegative() throws Exception {
+    void save_shouldThrowAMethodArgumentNotValidExceptionDescriptor_whenValueIsNegative() throws Exception {
         MockHttpServletRequestBuilder request = post(BASE_URL)
                 .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
                         .value(testTransaction.getValue().multiply(BigDecimal.ONE.negate()))
@@ -111,11 +116,15 @@ public class TransactionControllerTest {
 
         mockMvc.perform(request)
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.exception").value(MethodArgumentNotValidException.class.getSimpleName()))
+                .andExpect(jsonPath("$.fields").value("value"))
+                .andExpect(jsonPath("$.fieldsMessage").value("transaction value cannot be zero or negative"));;
     }
 
     @Test
-    void save_shouldReturnBadRequestStatusCode_whenDateIsNull() throws Exception {
+    void save_shouldThrowAMethodArgumentNotValidExceptionDescriptor_whenDateIsNull() throws Exception {
         MockHttpServletRequestBuilder request = post(BASE_URL)
                 .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
                         .value(testTransaction.getValue())
@@ -125,11 +134,15 @@ public class TransactionControllerTest {
 
         mockMvc.perform(request)
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.exception").value(MethodArgumentNotValidException.class.getSimpleName()))
+                .andExpect(jsonPath("$.fields").value("dateTime"))
+                .andExpect(jsonPath("$.fieldsMessage").value("transaction date cannot be null"));
     }
 
     @Test
-    void save_shouldReturnBadRequestStatusCode_whenValueIsNull() throws Exception {
+    void save_shouldThrowAMethodArgumentNotValidExceptionDescriptor_whenValueIsNull() throws Exception {
         MockHttpServletRequestBuilder request = post(BASE_URL)
                 .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
                         .value(null)
@@ -139,7 +152,27 @@ public class TransactionControllerTest {
 
         mockMvc.perform(request)
                 .andDo(print())
-                .andExpect(status().isBadRequest());
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.exception").value(MethodArgumentNotValidException.class.getSimpleName()))
+                .andExpect(jsonPath("$.fields").value("value"))
+                .andExpect(jsonPath("$.fieldsMessage").value("transaction value cannot be null"));
+    }
+
+    @Test
+    void save_shouldThrowAMethodArgumentNotValidExceptionDescriptor_whenThereAreNoTwoFractionalDigits() throws Exception {
+        MockHttpServletRequestBuilder request = post(BASE_URL)
+                .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
+                        .value(new BigDecimal("99.998"))
+                        .dateTime(testTransaction.getDateTime())
+                        .build()))
+                .contentType(MediaType.APPLICATION_JSON);
+
+        mockMvc.perform(request)
+                .andDo(print())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.exception").value(MethodArgumentNotValidException.class.getSimpleName()))
+                .andExpect(jsonPath("$.fields").value("value"))
+                .andExpect(jsonPath("$.fieldsMessage").value("transaction value must be only two fractional digits"));
     }
 
     @Test

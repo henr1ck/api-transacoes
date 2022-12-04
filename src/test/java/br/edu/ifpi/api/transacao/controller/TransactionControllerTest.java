@@ -40,7 +40,7 @@ public class TransactionControllerTest {
 
     private final Transaction testTransaction = Transaction.builder()
             .value(new BigDecimal("99.99"))
-            .dateTime(OffsetDateTime.of(LocalDateTime.of(2026, Month.DECEMBER, 2,10,30,10), ZoneOffset.MAX))
+            .dateTime(OffsetDateTime.of(LocalDateTime.of(2020, Month.DECEMBER, 2,10,30,10), ZoneOffset.MAX))
             .build();
 
     @Test
@@ -88,11 +88,11 @@ public class TransactionControllerTest {
     }
 
     @Test
-    void save_shouldThrowAMethodArgumentNotValidExceptionDescriptor_whenDateIsInThePast() throws Exception {
+    void save_shouldThrowAMethodArgumentNotValidExceptionDescriptor_whenDateIsInTheFuture() throws Exception {
         MockHttpServletRequestBuilder request = post(BASE_URL)
                 .content(objectMapper.writeValueAsString(TransactionPostRequestBody.builder()
                         .value(testTransaction.getValue())
-                        .dateTime(testTransaction.getDateTime().minusYears(1000L))
+                        .dateTime(testTransaction.getDateTime().plusYears(1000L))
                         .build()))
                 .contentType(MediaType.APPLICATION_JSON);
 
@@ -102,7 +102,7 @@ public class TransactionControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.exception").value(MethodArgumentNotValidException.class.getSimpleName()))
                 .andExpect(jsonPath("$.fields").value("dateTime"))
-                .andExpect(jsonPath("$.fieldsMessage").value("transaction date cannot be in the past"));
+                .andExpect(jsonPath("$.fieldsMessage").value("transaction date cannot be in the future"));
     }
 
     @Test

@@ -6,10 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Future;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import javax.validation.constraints.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
 
@@ -24,7 +21,7 @@ public class TransactionPostRequestBody {
     private BigDecimal value;
 
     @NotNull(message = "transaction date cannot be null")
-    @Future(message = "transaction date cannot be in the past")
+    @Past(message = "transaction date cannot be in the future")
     private OffsetDateTime dateTime;
 
     public Transaction convertTransactionRequestBodyToTransactionModel(){
